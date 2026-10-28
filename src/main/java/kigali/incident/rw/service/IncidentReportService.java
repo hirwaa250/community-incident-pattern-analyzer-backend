@@ -1,5 +1,6 @@
 package kigali.incident.rw.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import kigali.incident.rw.domain.IncidentReport;
+import kigali.incident.rw.domain.ReportStatus;
 import kigali.incident.rw.repository.IncidentReportRepository;
 
 @Service
@@ -50,5 +52,13 @@ public class IncidentReportService {
         }
         incidentReportRepo.deleteById(id);
         return "Incident report deleted successfully";
+    }
+
+    public List<IncidentReport> getIncidentReportsByStatus(ReportStatus status){
+        return incidentReportRepo.findByStatusOrderByIncidentDateAsc(status);
+    }
+
+    public List<IncidentReport> getIncidentReportsBetween(LocalDate start, LocalDate end){
+        return incidentReportRepo.findByIncidentDateBetweenOrderByIncidentDateAsc(start, end);
     }
 }

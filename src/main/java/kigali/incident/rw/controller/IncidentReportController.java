@@ -1,5 +1,6 @@
 package kigali.incident.rw.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kigali.incident.rw.domain.IncidentReport;
+import kigali.incident.rw.domain.ReportStatus;
 import kigali.incident.rw.service.IncidentReportService;
 
 @RestController
@@ -30,6 +33,20 @@ public class IncidentReportController {
     public ResponseEntity<?> saveIncidentReport(@RequestBody IncidentReport incidentReport){
         String returnedMessage = incidentReportServ.saveIncidentReport(incidentReport);
         return new ResponseEntity<>(returnedMessage, HttpStatus.CREATED);
+    }
+
+    @GetMapping(value="/by-status")
+    public ResponseEntity<?> getIncidentReportsByStatus(@RequestParam ReportStatus status){
+        List<IncidentReport> incidentReports = incidentReportServ.getIncidentReportsByStatus(status);
+        return new ResponseEntity<>(incidentReports, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/between")
+    public ResponseEntity<?> getIncidentReportsBetween(@RequestParam String start, @RequestParam String end){
+        LocalDate startDate = LocalDate.parse(start);
+        LocalDate endDate = LocalDate.parse(end);
+        List<IncidentReport> incidentReports = incidentReportServ.getIncidentReportsBetween(startDate, endDate);
+        return new ResponseEntity<>(incidentReports, HttpStatus.OK);
     }
 
     @GetMapping(value="/all")

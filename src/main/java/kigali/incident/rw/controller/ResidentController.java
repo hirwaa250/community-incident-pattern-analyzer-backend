@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kigali.incident.rw.domain.Resident;
@@ -35,6 +36,12 @@ public class ResidentController {
     @GetMapping(value="/all")
     public ResponseEntity<?> getAllResidents(){
         List<Resident> residents = residentServ.getAllResidents();
+        return new ResponseEntity<>(residents, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/by-village")
+    public ResponseEntity<?> getResidentsByVillage(@RequestParam String village){
+        List<Resident> residents = residentServ.getResidentsByVillage(village);
         return new ResponseEntity<>(residents, HttpStatus.OK);
     }
 
