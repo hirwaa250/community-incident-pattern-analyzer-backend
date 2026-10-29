@@ -47,4 +47,8 @@ public class IncidentTypeService {
         incidentTypeRepo.deleteById(id);
         return "Incident type deleted successfully";
     }
+
+    public List<IncidentType> getUnusedIncidentTypes(){
+        return incidentTypeRepo.findUnusedIncidentTypes();
+    }
 }

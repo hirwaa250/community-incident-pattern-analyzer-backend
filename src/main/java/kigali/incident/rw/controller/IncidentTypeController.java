@@ -38,6 +38,12 @@ public class IncidentTypeController {
         return new ResponseEntity<>(incidentTypes, HttpStatus.OK);
     }
 
+    @GetMapping(value="/unused")
+    public ResponseEntity<?> getUnusedIncidentTypes(){
+        List<IncidentType> incidentTypes = incidentTypeServ.getUnusedIncidentTypes();
+        return new ResponseEntity<>(incidentTypes, HttpStatus.OK);
+    }
+
     @GetMapping(value="/{id}")
     public ResponseEntity<?> getIncidentTypeById(@PathVariable UUID id){
         Optional<IncidentType> incidentType = incidentTypeServ.getIncidentTypeById(id);

@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 
 import kigali.incident.rw.domain.Resident;
 import kigali.incident.rw.repository.ResidentRepository;
+import kigali.incident.rw.repository.ResponseOfficerRepository;
 
 @Service
 public class ResidentService {
 
     @Autowired
     private ResidentRepository residentRepo;
+
+    @Autowired
+    private ResponseOfficerRepository responseOfficerRepo;
 
     public String saveResident(Resident resident){
         residentRepo.save(resident);
@@ -53,5 +57,12 @@ public class ResidentService {
 
     public List<Resident> getResidentsByVillage(String village){
         return residentRepo.findByVillageIgnoreCaseOrderByLastNameAsc(village);
+    }
+
+    public Optional<List<Resident>> getResidentsOfResponseOfficer(UUID responseOfficerId){
+        if(!responseOfficerRepo.existsById(responseOfficerId)){
+            return Optional.empty();
+        }
+        return Optional.of(residentRepo.findResidentsOfResponseOfficer(responseOfficerId));
     }
 }

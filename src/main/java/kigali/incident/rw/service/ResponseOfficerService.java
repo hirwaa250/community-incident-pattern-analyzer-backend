@@ -50,4 +50,8 @@ public class ResponseOfficerService {
         responseOfficerRepo.deleteById(id);
         return "Response officer deleted successfully";
     }
+
+    public List<ResponseOfficer> getResponseOfficersByIncidentType(String name){
+        return responseOfficerRepo.findResponseOfficersByIncidentTypeName(name);
+    }
 }

@@ -38,6 +38,12 @@ public class CellController {
         return new ResponseEntity<>(cells, HttpStatus.OK);
     }
 
+    @GetMapping(value="/free")
+    public ResponseEntity<?> getFreeCells(){
+        List<Cell> cells = cellServ.getFreeCells();
+        return new ResponseEntity<>(cells, HttpStatus.OK);
+    }
+
     @GetMapping(value="/{id}")
     public ResponseEntity<?> getCellById(@PathVariable UUID id){
         Optional<Cell> cell = cellServ.getCellById(id);

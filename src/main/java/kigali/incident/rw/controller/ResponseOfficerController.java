@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kigali.incident.rw.domain.ResponseOfficer;
@@ -35,6 +36,12 @@ public class ResponseOfficerController {
     @GetMapping(value="/all")
     public ResponseEntity<?> getAllResponseOfficers(){
         List<ResponseOfficer> responseOfficers = responseOfficerServ.getAllResponseOfficers();
+        return new ResponseEntity<>(responseOfficers, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/by-incident-type")
+    public ResponseEntity<?> getResponseOfficersByIncidentType(@RequestParam String name){
+        List<ResponseOfficer> responseOfficers = responseOfficerServ.getResponseOfficersByIncidentType(name);
         return new ResponseEntity<>(responseOfficers, HttpStatus.OK);
     }
 

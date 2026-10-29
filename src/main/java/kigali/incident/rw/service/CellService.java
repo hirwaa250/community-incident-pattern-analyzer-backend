@@ -48,4 +48,8 @@ public class CellService {
         cellRepo.deleteById(id);
         return "Cell deleted successfully";
     }
+
+    public List<Cell> getFreeCells(){
+        return cellRepo.findFreeCells();
+    }
 }

@@ -45,6 +45,16 @@ public class ResidentController {
         return new ResponseEntity<>(residents, HttpStatus.OK);
     }
 
+    @GetMapping(value="/of-response-officer/{responseOfficerId}")
+    public ResponseEntity<?> getResidentsOfResponseOfficer(@PathVariable UUID responseOfficerId){
+        Optional<List<Resident>> residents = residentServ.getResidentsOfResponseOfficer(responseOfficerId);
+        if(residents.isPresent()){
+            return new ResponseEntity<>(residents.get(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("The response officer with that id does not exist", HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping(value="/{id}")
     public ResponseEntity<?> getResidentById(@PathVariable UUID id){
         Optional<Resident> resident = residentServ.getResidentById(id);
