@@ -12,6 +12,8 @@ import kigali.incident.rw.domain.Cell;
 @Repository
 public interface CellRepository extends JpaRepository<Cell, UUID> {
 
+    Cell findByCellNumber(int cellNumber);
+
     @Query("SELECT c FROM Cell c WHERE NOT EXISTS (SELECT o FROM ResponseOfficer o WHERE o.cell = c) ORDER BY c.cellNumber ASC")
     List<Cell> findFreeCells();
 }

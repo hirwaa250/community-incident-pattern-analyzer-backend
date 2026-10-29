@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,6 +44,30 @@ public class ResponseOfficerController {
     public ResponseEntity<?> getResponseOfficersByIncidentType(@RequestParam String name){
         List<ResponseOfficer> responseOfficers = responseOfficerServ.getResponseOfficersByIncidentType(name);
         return new ResponseEntity<>(responseOfficers, HttpStatus.OK);
+    }
+
+    @PutMapping(value="/{responseOfficerId}/incident-types/{incidentTypeId}")
+    public ResponseEntity<?> addIncidentType(@PathVariable UUID responseOfficerId, @PathVariable UUID incidentTypeId){
+        String returnedMessage = responseOfficerServ.addIncidentType(responseOfficerId, incidentTypeId);
+        if(returnedMessage.equals("Incident type added to the response officer")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+        }else if(returnedMessage.equals("The response officer already has that incident type")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.CONFLICT);
+        }else{
+            return new ResponseEntity<>(returnedMessage, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping(value="/{responseOfficerId}/cell")
+    public ResponseEntity<?> changeCell(@PathVariable UUID responseOfficerId, @RequestParam int cellNumber){
+        String returnedMessage = responseOfficerServ.changeCell(responseOfficerId, cellNumber);
+        if(returnedMessage.equals("Cell changed successfully")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+        }else if(returnedMessage.equals("That cell is taken by another response officer")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.CONFLICT);
+        }else{
+            return new ResponseEntity<>(returnedMessage, HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping(value="/{id}")

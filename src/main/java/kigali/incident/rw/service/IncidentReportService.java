@@ -19,6 +19,18 @@ public class IncidentReportService {
     private IncidentReportRepository incidentReportRepo;
 
     public String saveIncidentReport(IncidentReport incidentReport){
+        if(incidentReport.getIncidentDate().isBefore(LocalDate.now())){
+            return "Incident report date cannot be in the past";
+        }
+        if(incidentReport.getResponseOfficer() == null){
+            return "Response officer is required";
+        }
+        boolean alreadyAssigned = incidentReportRepo.existsByResponseOfficerIdAndIncidentDateAndStatusNot(
+                incidentReport.getResponseOfficer().getId(), incidentReport.getIncidentDate(), ReportStatus.DISMISSED);
+        if(alreadyAssigned){
+            return "Response officer is already assigned an incident on that date";
+        }
+        incidentReport.setStatus(ReportStatus.REPORTED);
         incidentReportRepo.save(incidentReport);
         return "Incident report saved successfully";
     }
@@ -52,6 +64,27 @@ public class IncidentReportService {
         }
         incidentReportRepo.deleteById(id);
         return "Incident report deleted successfully";
+    }
+
+    public String updateStatus(UUID id, ReportStatus status){
+        Optional<IncidentReport> existing = incidentReportRepo.findById(id);
+        if(existing.isEmpty()){
+            return "The incident report with that id does not exist";
+        }
+        IncidentReport toUpdate = existing.get();
+        ReportStatus current = toUpdate.getStatus();
+        boolean allowed = false;
+        if(current == ReportStatus.REPORTED){
+            allowed = status == ReportStatus.INVESTIGATING || status == ReportStatus.DISMISSED;
+        }else if(current == ReportStatus.INVESTIGATING){
+            allowed = status == ReportStatus.CLOSED || status == ReportStatus.DISMISSED;
+        }
+        if(!allowed){
+            return "Cannot change status from " + current + " to " + status;
+        }
+        toUpdate.setStatus(status);
+        incidentReportRepo.save(toUpdate);
+        return "Incident report status updated successfully";
     }
 
     public List<IncidentReport> getIncidentReportsByStatus(ReportStatus status){

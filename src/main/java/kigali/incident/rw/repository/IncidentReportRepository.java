@@ -16,4 +16,6 @@ public interface IncidentReportRepository extends JpaRepository<IncidentReport, 
     List<IncidentReport> findByStatusOrderByIncidentDateAsc(ReportStatus status);
 
     List<IncidentReport> findByIncidentDateBetweenOrderByIncidentDateAsc(LocalDate start, LocalDate end);
+
+    boolean existsByResponseOfficerIdAndIncidentDateAndStatusNot(UUID responseOfficerId, LocalDate incidentDate, ReportStatus status);
 }

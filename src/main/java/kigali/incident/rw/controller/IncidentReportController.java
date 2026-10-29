@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,7 +33,25 @@ public class IncidentReportController {
     @PostMapping(value="/save")
     public ResponseEntity<?> saveIncidentReport(@RequestBody IncidentReport incidentReport){
         String returnedMessage = incidentReportServ.saveIncidentReport(incidentReport);
-        return new ResponseEntity<>(returnedMessage, HttpStatus.CREATED);
+        if(returnedMessage.equals("Incident report saved successfully")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.CREATED);
+        }else if(returnedMessage.equals("Response officer is already assigned an incident on that date")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.CONFLICT);
+        }else{
+            return new ResponseEntity<>(returnedMessage, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping(value="/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable UUID id, @RequestParam ReportStatus status){
+        String returnedMessage = incidentReportServ.updateStatus(id, status);
+        if(returnedMessage.equals("Incident report status updated successfully")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+        }else if(returnedMessage.equals("The incident report with that id does not exist")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.NOT_FOUND);
+        }else{
+            return new ResponseEntity<>(returnedMessage, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(value="/by-status")

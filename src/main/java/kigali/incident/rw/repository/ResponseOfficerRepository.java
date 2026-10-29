@@ -15,4 +15,6 @@ public interface ResponseOfficerRepository extends JpaRepository<ResponseOfficer
 
     @Query("SELECT o FROM ResponseOfficer o JOIN o.incidentTypes t WHERE LOWER(t.name) = LOWER(:name)")
     List<ResponseOfficer> findResponseOfficersByIncidentTypeName(@Param("name") String name);
+
+    boolean existsByCellCellNumberAndIdNot(int cellNumber, UUID id);
 }
