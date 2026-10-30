@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import kigali.incident.rw.domain.IncidentReport;
 import kigali.incident.rw.domain.ReportStatus;
+import kigali.incident.rw.repository.FindingRepository;
 import kigali.incident.rw.repository.IncidentReportRepository;
 
 @Service
@@ -17,6 +18,9 @@ public class IncidentReportService {
 
     @Autowired
     private IncidentReportRepository incidentReportRepo;
+
+    @Autowired
+    private FindingRepository findingRepo;
 
     public String saveIncidentReport(IncidentReport incidentReport){
         if(incidentReport.getIncidentDate().isBefore(LocalDate.now())){
@@ -61,6 +65,9 @@ public class IncidentReportService {
     public String deleteIncidentReport(UUID id){
         if(!incidentReportRepo.existsById(id)){
             return "The incident report with that id does not exist";
+        }
+        if(findingRepo.existsByIncidentReportId(id)){
+            return "That incident report has findings, delete them first";
         }
         incidentReportRepo.deleteById(id);
         return "Incident report deleted successfully";

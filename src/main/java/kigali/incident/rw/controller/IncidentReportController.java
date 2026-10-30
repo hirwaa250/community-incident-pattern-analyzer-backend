@@ -99,6 +99,8 @@ public class IncidentReportController {
         String returnedMessage = incidentReportServ.deleteIncidentReport(id);
         if(returnedMessage.equals("Incident report deleted successfully")){
             return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+        }else if(returnedMessage.equals("That incident report has findings, delete them first")){
+            return new ResponseEntity<>(returnedMessage, HttpStatus.CONFLICT);
         }else{
             return new ResponseEntity<>(returnedMessage, HttpStatus.NOT_FOUND);
         }
