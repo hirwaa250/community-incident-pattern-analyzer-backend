@@ -22,6 +22,10 @@ public interface IncidentReportRepository extends JpaRepository<IncidentReport, 
 
     boolean existsByResponseOfficerIdAndIncidentDateAndStatusNot(UUID responseOfficerId, LocalDate incidentDate, ReportStatus status);
 
+    long countByIncidentDate(LocalDate incidentDate);
+
+    long countByStatus(ReportStatus status);
+
     @Query("SELECT r.status, COUNT(r) FROM IncidentReport r GROUP BY r.status")
     List<Object[]> countIncidentReportsByStatus();
 

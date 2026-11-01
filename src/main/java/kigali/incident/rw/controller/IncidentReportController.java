@@ -6,6 +6,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -85,6 +89,18 @@ public class IncidentReportController {
         LocalDate day = LocalDate.parse(date);
         String returnedMessage = incidentReportServ.cancelResponseOfficerDay(responseOfficerId, day);
         return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/page")
+    public ResponseEntity<?> getIncidentReportsPage(@RequestParam int page, @RequestParam int size, @RequestParam String sort){
+        String[] sortParts = sort.split(",");
+        Sort.Direction direction = Sort.Direction.ASC;
+        if(sortParts.length > 1){
+            direction = Sort.Direction.fromString(sortParts[1].trim());
+        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParts[0].trim()));
+        Page<IncidentReport> incidentReports = incidentReportServ.getIncidentReportsPage(pageable);
+        return new ResponseEntity<>(incidentReports, HttpStatus.OK);
     }
 
     @GetMapping(value="/{id}")
