@@ -1,0 +1,3485 @@
+{
+  "info": {
+    "name": "Community Incident Pattern Analyzer - Mid-Term",
+    "description": "Run the folders in order (Collection Runner works too). Step 0 seeds the data through the save endpoints and stores every id in collection variables used by the later requests. Dates are computed from today, so the incident reports are always in the future (the date rule of D1 rejects past dates). Start from an empty database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "var base = pm.collectionVariables.get('baseUrl');",
+          "function day(n) {",
+          "    var d = new Date();",
+          "    d.setDate(d.getDate() + n);",
+          "    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');",
+          "}",
+          "pm.collectionVariables.set('today', day(0));",
+          "pm.collectionVariables.set('yesterday', day(-1));",
+          "[2, 3, 5, 9, 12, 15, 20, 30, 33, 40, 41, 45, 100, 101].forEach(function (n) { pm.collectionVariables.set('plus' + n, day(n)); });",
+          "function camel(text) {",
+          "    return String(text).trim().split(/\\s+/).map(function (w, i) {",
+          "        return i === 0 ? w.charAt(0).toLowerCase() + w.slice(1) : w.charAt(0).toUpperCase() + w.slice(1);",
+          "    }).join('');",
+          "}",
+          "function loadIds(path, field, prefix) {",
+          "    pm.sendRequest(base + path, function (err, res) {",
+          "        if (err || res.code !== 200) { return; }",
+          "        res.json().forEach(function (row) {",
+          "            pm.collectionVariables.set(prefix + camel(row[field]) + 'Id', row.id);",
+          "        });",
+          "    });",
+          "}",
+          "loadIds('/api/incident-types/all', 'name', '');",
+          "loadIds('/api/cells/all', 'cellNumber', 'cell');",
+          "loadIds('/api/response-officers/all', 'lastName', '');",
+          "loadIds('/api/residents/all', 'firstName', '');",
+          "pm.sendRequest(base + '/api/incident-reports/all', function (err, res) {",
+          "    if (err || res.code !== 200) { return; }",
+          "    res.json().forEach(function (row) { pm.collectionVariables.set('rep_' + row.description, row.id); });",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "nationalId",
+      "value": "1198880045678901"
+    }
+  ],
+  "item": [
+    {
+      "name": "Step 0 - Seed data",
+      "item": [
+        {
+          "name": "Save incident type Theft",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Theft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident type Flooding",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Flooding\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident type Domestic Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Domestic Dispute\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident type Road Accident",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Road Accident\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all incident types (stores ids as theftId...)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save cell 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 1,\n  \"name\": \"Cell One\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save cell 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 2,\n  \"name\": \"Cell Two\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save cell 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 3,\n  \"name\": \"Cell Three\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save cell 4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 4,\n  \"name\": \"Cell Four\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all cells (stores ids as cell1Id...)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save response officer Jean Mugisha (Theft + Flooding, cell 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Mugisha\",\n  \"phone\": \"0788000001\",\n  \"cell\": {\n    \"id\": \"{{cell1Id}}\"\n  },\n  \"incidentTypes\": [\n    {\n      \"id\": \"{{theftId}}\"\n    },\n    {\n      \"id\": \"{{floodingId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save response officer Alice Uwimana (Theft, cell 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Uwimana\",\n  \"phone\": \"0788000002\",\n  \"cell\": {\n    \"id\": \"{{cell2Id}}\"\n  },\n  \"incidentTypes\": [\n    {\n      \"id\": \"{{theftId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save response officer Eric Habimana (Domestic Dispute, cell 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Eric\",\n  \"lastName\": \"Habimana\",\n  \"phone\": \"0788000003\",\n  \"cell\": {\n    \"id\": \"{{cell3Id}}\"\n  },\n  \"incidentTypes\": [\n    {\n      \"id\": \"{{domesticDisputeId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all response officers (stores ids as mugishaId...)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save resident Divine Uwase (nationalId used in the tests)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Divine\",\n  \"lastName\": \"Uwase\",\n  \"nationalId\": \"1198880045678901\",\n  \"village\": \"Rugando\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save resident Aline Mukamana",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Aline\",\n  \"lastName\": \"Mukamana\",\n  \"nationalId\": \"1199270012345678\",\n  \"village\": \"Rugando\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save resident Patrick Nshuti",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Patrick\",\n  \"lastName\": \"Nshuti\",\n  \"nationalId\": \"1198580023456789\",\n  \"village\": \"Kagugu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save resident Grace Ingabire",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Grace\",\n  \"lastName\": \"Ingabire\",\n  \"nationalId\": \"1200190034567890\",\n  \"village\": \"Gatsata\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save resident Kevin Niyonzima",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Kevin\",\n  \"lastName\": \"Niyonzima\",\n  \"nationalId\": \"1199680056789012\",\n  \"village\": \"Kimironko\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all residents (stores ids as divineId...)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report closed1 (divine / mugisha, today + 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus2}}\",\n  \"location\": \"Rugando market\",\n  \"description\": \"closed1\",\n  \"resident\": {\n    \"id\": \"{{divineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report closed1 -> INVESTIGATING",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed1}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report closed1 -> CLOSED",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed1}}/status?status=CLOSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report closed2 (divine / mugisha, today + 3)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus3}}\",\n  \"location\": \"Rugando bridge\",\n  \"description\": \"closed2\",\n  \"resident\": {\n    \"id\": \"{{divineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report closed2 -> INVESTIGATING",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed2}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report closed2 -> CLOSED",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed2}}/status?status=CLOSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report investigating1 (divine / habimana, today + 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus5}}\",\n  \"location\": \"Rugando school\",\n  \"description\": \"investigating1\",\n  \"resident\": {\n    \"id\": \"{{divineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report investigating1 -> INVESTIGATING",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_investigating1}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report dismissed1 (aline / mugisha, today + 9)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus9}}\",\n  \"location\": \"Kagugu road\",\n  \"description\": \"dismissed1\",\n  \"resident\": {\n    \"id\": \"{{alineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report dismissed1 -> DISMISSED",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_dismissed1}}/status?status=DISMISSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report reported1 (patrick / mugisha, today + 9, same day as dismissed1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus9}}\",\n  \"location\": \"Kagugu centre\",\n  \"description\": \"reported1\",\n  \"resident\": {\n    \"id\": \"{{patrickId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report reported2 (grace / uwimana, today + 12)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus12}}\",\n  \"location\": \"Gatsata market\",\n  \"description\": \"reported2\",\n  \"resident\": {\n    \"id\": \"{{graceId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{uwimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report reported3 (kevin / habimana, today + 15)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus15}}\",\n  \"location\": \"Kimironko stream\",\n  \"description\": \"reported3\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report investigating2 (aline / uwimana, today + 20)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus20}}\",\n  \"location\": \"Rugando well\",\n  \"description\": \"investigating2\",\n  \"resident\": {\n    \"id\": \"{{alineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{uwimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report investigating2 -> INVESTIGATING",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_investigating2}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report reported4 (patrick / habimana, today + 30)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus30}}\",\n  \"location\": \"Kagugu junction\",\n  \"description\": \"reported4\",\n  \"resident\": {\n    \"id\": \"{{patrickId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save incident report dismissed2 (grace / mugisha, today + 33)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus33}}\",\n  \"location\": \"Gatsata hill\",\n  \"description\": \"dismissed2\",\n  \"resident\": {\n    \"id\": \"{{graceId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report dismissed2 -> DISMISSED",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_dismissed2}}/status?status=DISMISSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all incident reports (stores ids as rep_closed1...)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"10 incident reports\", function () { pm.expect(pm.response.json().length).to.eql(10); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part A - Domain model and CRUD",
+      "item": [
+        {
+          "name": "A1 Incident type does not show its response officers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"No responseOfficers in the JSON\", function () { pm.response.json().forEach(function (t) { pm.expect(t).to.not.have.property('responseOfficers'); }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A1 Response officer shows its cell and incident types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"cell and incidentTypes present\", function () { var o = pm.response.json()[0]; pm.expect(o).to.have.property('cell'); pm.expect(o.incidentTypes).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Save incident type -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A2 Test Type\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident type saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get all incident types -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get incident type by id -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/{{a2TestTypeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get unknown incident type -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident type with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update incident type -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/update/{{a2TestTypeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A2 Test Type Renamed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident type updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update unknown incident type -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-types/update/00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A2 Test Type Renamed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident type with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete incident type -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/delete/{{a2TestTypeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident type deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete the same incident type again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/delete/{{a2TestTypeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident type with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Save cell -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 99,\n  \"name\": \"A2 Test Cell\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cell saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get all cells -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get cell by id -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/{{cell99Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get unknown cell -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The cell with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update cell -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/update/{{cell99Id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 99,\n  \"name\": \"A2 Test Cell Renamed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cell updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update unknown cell -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/cells/update/00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cellNumber\": 99,\n  \"name\": \"A2 Test Cell Renamed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The cell with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete cell -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/delete/{{cell99Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cell deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete the same cell again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/delete/{{cell99Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The cell with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Save response officer -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Tester\",\n  \"phone\": \"0788999999\",\n  \"incidentTypes\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Response officer saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get all response officers -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get response officer by id -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{testerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get unknown response officer -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update response officer -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/update/{{testerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Tester\",\n  \"phone\": \"0788888888\",\n  \"incidentTypes\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Response officer updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update unknown response officer -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/response-officers/update/00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Tester\",\n  \"phone\": \"0788888888\",\n  \"incidentTypes\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete response officer -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/delete/{{testerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Response officer deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete the same response officer again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/delete/{{testerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Save resident -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Temp\",\n  \"lastName\": \"Resident\",\n  \"nationalId\": \"1199900000000001\",\n  \"village\": \"Test Village\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Resident saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get all residents -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get resident by id -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/{{tempId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get unknown resident -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The resident with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update resident -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/update/{{tempId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Temp\",\n  \"lastName\": \"Resident\",\n  \"nationalId\": \"1199900000000001\",\n  \"village\": \"Test Village Two\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Resident updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update unknown resident -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/residents/update/00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Temp\",\n  \"lastName\": \"Resident\",\n  \"nationalId\": \"1199900000000001\",\n  \"village\": \"Test Village Two\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The resident with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete resident -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/delete/{{tempId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Resident deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete the same resident again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/delete/{{tempId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The resident with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Save incident report -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus45}}\",\n  \"location\": \"A2 Location\",\n  \"description\": \"a2Temp\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get all incident reports -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get incident report by id -> 200",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_a2Temp}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Get unknown incident report -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident report with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update incident report -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/update/{{rep_a2Temp}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus45}}\",\n  \"location\": \"A2 Location Updated\",\n  \"description\": \"a2Temp\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Update unknown incident report -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/update/00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus45}}\",\n  \"location\": \"A2 Location Updated\",\n  \"description\": \"a2Temp\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident report with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete incident report -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/delete/{{rep_a2Temp}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 Delete the same incident report again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/delete/{{rep_a2Temp}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident report with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part B - Derived queries",
+      "item": [
+        {
+          "name": "B1 Residents of village rugando -> 200, sorted by lastName",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/by-village?village=rugando"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 residents, Mukamana before Uwase\", function () { var r = pm.response.json(); pm.expect(r.length).to.eql(2); pm.expect(r[0].lastName).to.eql('Mukamana'); pm.expect(r[1].lastName).to.eql('Uwase'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B1 Letter case does not matter (RUGANDO)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/by-village?village=RUGANDO"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 residents\", function () { pm.expect(pm.response.json().length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B1 Nobody lives there -> empty list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/by-village?village=nowhere"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Empty list\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B2 Incident reports REPORTED, earliest first",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/by-status?status=REPORTED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"All REPORTED and ordered by incidentDate\", function () { var r = pm.response.json(); pm.expect(r.length).to.eql(4); r.forEach(function (x, i) { pm.expect(x.status).to.eql('REPORTED'); if (i > 0) { pm.expect(x.incidentDate >= r[i - 1].incidentDate).to.be.true; } }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B2 Incident reports CLOSED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/by-status?status=CLOSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 CLOSED\", function () { pm.expect(pm.response.json().length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B3 Incident reports between today and today + 40",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/between?start={{today}}&end={{plus40}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"10 reports ordered by incidentDate\", function () { var r = pm.response.json(); pm.expect(r.length).to.eql(10); r.forEach(function (x, i) { if (i > 0) { pm.expect(x.incidentDate >= r[i - 1].incidentDate).to.be.true; } }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B3 Both dates are inclusive (today + 9 to today + 9)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/between?start={{plus9}}&end={{plus9}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 reports on that day\", function () { pm.expect(pm.response.json().length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B3 Range without reports -> empty list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/between?start={{plus100}}&end={{plus101}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Empty list\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part C - JPQL with joins",
+      "item": [
+        {
+          "name": "C1 Response officers holding theft",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/by-incident-type?name=theft"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Mugisha and Uwimana\", function () { var n = pm.response.json().map(function (o) { return o.lastName; }).sort(); pm.expect(n).to.eql(['Mugisha', 'Uwimana']); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C1 Letter case does not matter (THEFT)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/by-incident-type?name=THEFT"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 response officers\", function () { pm.expect(pm.response.json().length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C1 Incident type nobody holds -> empty list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/by-incident-type?name=road accident"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Empty list\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C2 Free cells (cell 4)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/free"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Only cell 4\", function () { var c = pm.response.json(); pm.expect(c.length).to.eql(1); pm.expect(c[0].cellNumber).to.eql(4); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C3 Incident types nobody holds (Road Accident)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-types/unused"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Only Road Accident\", function () { var t = pm.response.json(); pm.expect(t.length).to.eql(1); pm.expect(t[0].name).to.eql('Road Accident'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C4 Residents of response officer Mugisha (listed once)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/of-response-officer/{{mugishaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"4 distinct residents\", function () { var r = pm.response.json(); pm.expect(r.length).to.eql(4); var ids = r.map(function (x) { return x.id; }); pm.expect(new Set(ids).size).to.eql(4); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C4 Unknown response officer -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/residents/of-response-officer/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part D - Business rules",
+      "item": [
+        {
+          "name": "D1 Safe save, status in body is ignored -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus40}}\",\n  \"status\": \"CLOSED\",\n  \"location\": \"D1 Location\",\n  \"description\": \"d1New\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D1 The new incident report starts as REPORTED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_d1New}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"status is REPORTED\", function () { pm.expect(pm.response.json().status).to.eql('REPORTED'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D1 Date in the past -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{yesterday}}\",\n  \"location\": \"D1 Location\",\n  \"description\": \"d1Past\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{habimanaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report date cannot be in the past\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D1 Response officer already assigned that date -> 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus2}}\",\n  \"location\": \"D1 Location\",\n  \"description\": \"d1Busy\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Response officer is already assigned an incident on that date\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D1 Only a DISMISSED report that day, officer can be assigned again -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/save",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus33}}\",\n  \"location\": \"D1 Location\",\n  \"description\": \"d1Again\",\n  \"resident\": {\n    \"id\": \"{{kevinId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 REPORTED -> INVESTIGATING (reported2) -> 200",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_reported2}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report status updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 CLOSED -> REPORTED -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed1}}/status?status=REPORTED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cannot change status from CLOSED to REPORTED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 REPORTED -> CLOSED -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_reported4}}/status?status=CLOSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cannot change status from REPORTED to CLOSED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 INVESTIGATING -> REPORTED -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_investigating1}}/status?status=REPORTED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cannot change status from INVESTIGATING to REPORTED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 DISMISSED -> INVESTIGATING -> 400",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_dismissed2}}/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cannot change status from DISMISSED to INVESTIGATING\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 Unknown incident report -> 404",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/00000000-0000-0000-0000-000000000000/status?status=INVESTIGATING"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident report with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 PUT update no longer changes the status (closed1, body says REPORTED) -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/incident-reports/update/{{rep_closed1}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidentDate\": \"{{plus2}}\",\n  \"status\": \"REPORTED\",\n  \"location\": \"Rugando market (updated)\",\n  \"description\": \"closed1\",\n  \"resident\": {\n    \"id\": \"{{divineId}}\"\n  },\n  \"responseOfficer\": {\n    \"id\": \"{{mugishaId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report updated successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2 closed1 is still CLOSED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/{{rep_closed1}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"status is still CLOSED\", function () { pm.expect(pm.response.json().status).to.eql('CLOSED'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3 Add Flooding to Habimana -> 200",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/incident-types/{{floodingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident type added to the response officer\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3 The incident types already there are kept (Habimana holds 2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"2 incident types\", function () { pm.expect(pm.response.json().incidentTypes.length).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3 Same incident type again -> 409",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/incident-types/{{floodingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer already has that incident type\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3 Unknown response officer -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/00000000-0000-0000-0000-000000000000/incident-types/{{floodingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3 Unknown incident type -> 404",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/incident-types/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"That incident type does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D4 Move Habimana to cell 4 -> 200",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/cell?cellNumber=4"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Cell changed successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D4 Cell already taken (cell 1) -> 409",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/cell?cellNumber=1"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"That cell is taken by another response officer\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D4 Unknown cellNumber -> 404",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/{{habimanaId}}/cell?cellNumber=999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The cell with that cellNumber does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D4 Unknown response officer -> 404",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/response-officers/00000000-0000-0000-0000-000000000000/cell?cellNumber=4"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The response officer with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D4 Check with C2: the old cell 3 is now free",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cells/free"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Only cell 3 is free\", function () { var c = pm.response.json(); pm.expect(c.length).to.eql(1); pm.expect(c[0].cellNumber).to.eql(3); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part E - Finding",
+      "item": [
+        {
+          "name": "E1 Write a finding (closed1) -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/findings/save?incidentReportId={{rep_closed1}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootCause\": \"Blocked drainage\",\n  \"summary\": \"Water entered three houses after heavy rain\",\n  \"affectedPeople\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Finding saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E1 Write a second finding (closed1) -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/findings/save?incidentReportId={{rep_closed1}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootCause\": \"Broken street light\",\n  \"summary\": \"Two thefts happened on the dark road\",\n  \"affectedPeople\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Finding saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E1 Write a finding (closed2) -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/findings/save?incidentReportId={{rep_closed2}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootCause\": \"Weak bridge rails\",\n  \"summary\": \"A child nearly fell from the bridge\",\n  \"affectedPeople\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Finding saved successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E1 Unknown incident report -> 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/findings/save?incidentReportId=00000000-0000-0000-0000-000000000000",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootCause\": \"Blocked drainage\",\n  \"summary\": \"Unknown report\",\n  \"affectedPeople\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The incident report with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E1 Incident report is not CLOSED (reported1) -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/findings/save?incidentReportId={{rep_reported1}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootCause\": \"Blocked drainage\",\n  \"summary\": \"Report is not closed\",\n  \"affectedPeople\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Findings are only for CLOSED incident reports\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E2 Finding history of resident Divine (newest first, stores a finding id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/findings/resident/{{nationalId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"3 findings of that resident, newest recordedDate first\", function () { var f = pm.response.json(); pm.expect(f.length).to.eql(3); f.forEach(function (x, i) { pm.expect(x.incidentReport.resident.nationalId).to.eql(pm.collectionVariables.get('nationalId')); if (i > 0) { pm.expect(x.recordedDate <= f[i - 1].recordedDate).to.be.true; } }); pm.collectionVariables.set('findingId', f[0].id); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E2 Resident without findings -> empty list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/findings/resident/0000000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Empty list\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E3 Delete an incident report that has findings (closed1) -> 409",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/delete/{{rep_closed1}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"That incident report has findings, delete them first\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E3 Delete a finding -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/findings/delete/{{findingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Finding deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E3 Delete the same finding again -> 404",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/findings/delete/{{findingId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"The finding with that id does not exist\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E3 Delete an incident report without findings (d1New) -> 200",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/delete/{{rep_d1New}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"Incident report deleted successfully\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part F - Reports and bulk updates",
+      "item": [
+        {
+          "name": "F1 Incident reports per status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/stats/by-status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Rows are [status, count], no zero count\", function () { var s = pm.response.json(); pm.expect(s.length).to.be.above(0); s.forEach(function (row) { pm.expect(['REPORTED','INVESTIGATING','CLOSED','DISMISSED']).to.include(row[0]); pm.expect(row[1]).to.be.above(0); }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F2 Mugisha is absent on today + 2, the CLOSED report is protected",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/cancel-day?responseOfficerId={{mugishaId}}&date={{plus2}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"0 incident reports cancelled\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F2 Mugisha is absent on today + 9 -> two reports updated",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/cancel-day?responseOfficerId={{mugishaId}}&date={{plus9}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Message', function () { pm.expect(pm.response.text()).to.eql(\"2 incident reports cancelled\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F2 Check: reported1 is now DISMISSED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/by-status?status=DISMISSED"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"reported1 is in the DISMISSED list\", function () { var d = pm.response.json().map(function (x) { return x.description; }); pm.expect(d).to.include('reported1'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bonus",
+      "item": [
+        {
+          "name": "Bonus Dashboard summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/dashboard/summary"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Keys in the required order, counts are numbers\", function () { var s = pm.response.json(); pm.expect(Object.keys(s)).to.eql(['residents','responseOfficers','freeCells','incidentsToday','reported','findings']); pm.expect(s.residents).to.eql(5); pm.expect(s.responseOfficers).to.eql(3); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bonus Incident reports page by page (page 0, size 5, newest first)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/incident-reports/page?page=0&size=5&sort=incidentDate,desc"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"5 rows with total pages and total elements\", function () { var p = pm.response.json(); var te = p.totalElements !== undefined ? p.totalElements : p.page.totalElements; var tp = p.totalPages !== undefined ? p.totalPages : p.page.totalPages; pm.expect(p.content.length).to.eql(5); pm.expect(te).to.be.above(5); pm.expect(tp).to.be.above(1); p.content.forEach(function (x, i) { if (i > 0) { pm.expect(x.incidentDate <= p.content[i - 1].incidentDate).to.be.true; } }); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
