@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import kigali.incident.rw.domain.IncidentReport;
 import kigali.incident.rw.domain.ReportStatus;
@@ -100,5 +101,15 @@ public class IncidentReportService {
 
     public List<IncidentReport> getIncidentReportsBetween(LocalDate start, LocalDate end){
         return incidentReportRepo.findByIncidentDateBetweenOrderByIncidentDateAsc(start, end);
+    }
+
+    public List<Object[]> getIncidentReportCountsByStatus(){
+        return incidentReportRepo.countIncidentReportsByStatus();
+    }
+
+    @Transactional
+    public String cancelResponseOfficerDay(UUID responseOfficerId, LocalDate date){
+        int cancelled = incidentReportRepo.cancelResponseOfficerDay(responseOfficerId, date);
+        return cancelled + " incident reports cancelled";
     }
 }

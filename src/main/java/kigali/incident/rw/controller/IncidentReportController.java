@@ -74,6 +74,19 @@ public class IncidentReportController {
         return new ResponseEntity<>(incidentReports, HttpStatus.OK);
     }
 
+    @GetMapping(value="/stats/by-status")
+    public ResponseEntity<?> getIncidentReportCountsByStatus(){
+        List<Object[]> stats = incidentReportServ.getIncidentReportCountsByStatus();
+        return new ResponseEntity<>(stats, HttpStatus.OK);
+    }
+
+    @PatchMapping(value="/cancel-day")
+    public ResponseEntity<?> cancelResponseOfficerDay(@RequestParam UUID responseOfficerId, @RequestParam String date){
+        LocalDate day = LocalDate.parse(date);
+        String returnedMessage = incidentReportServ.cancelResponseOfficerDay(responseOfficerId, day);
+        return new ResponseEntity<>(returnedMessage, HttpStatus.OK);
+    }
+
     @GetMapping(value="/{id}")
     public ResponseEntity<?> getIncidentReportById(@PathVariable UUID id){
         Optional<IncidentReport> incidentReport = incidentReportServ.getIncidentReportById(id);
